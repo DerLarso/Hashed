@@ -1,0 +1,6 @@
+[workspace]
+members = ["app/src-tauri"]
+resolver = "2"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
