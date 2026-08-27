@@ -2,12 +2,14 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod core;
-use crate::core::{hash_manager::HashAlgorithm, scan_manager::ScanManager};
+use crate::core::{
+    hash_manager::HashAlgorithm, io::directory_node::DirectoryNode, scan_manager::ScanManager,
+};
 fn main() {
-    hashed_lib::run();
+    //hashed_lib::run();
     let mut scan = ScanManager::new(HashAlgorithm::Blake3);
 
-    let res = scan.start_hash(String::from("/"));
+    let res = scan.start_hash(String::from("/home/lars/Games"));
 
     match res {
         Ok(()) => handle_success(&mut scan),
@@ -25,5 +27,17 @@ fn handle_success(s: &mut ScanManager) {
             Ok(s) => println!("Path: {}; Result: {}", i.get_path(), s),
             Err(s) => println!("Path: {}; Result: {}", i.get_path(), s),
         }
+    }
+
+    let test = DirectoryNode::build_tree(s.get_path(), finished_list);
+    let json = test.to_json();
+    match json {
+        Ok(s) => println!("{}", s),
+        Err(e) => println!("{}", e),
+    }
+    let output = test.save_to_file("/home/lars/Downloads/test.json");
+    match output {
+        Ok(()) => (),
+        Err(_e) => println!("Error"),
     }
 }

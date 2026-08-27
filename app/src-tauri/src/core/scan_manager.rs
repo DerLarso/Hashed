@@ -7,6 +7,7 @@ use crate::core::structs::file_info::FileInfo;
 pub struct ScanManager {
     file_list: Vec<FileInfo>,
     hasher: HashManager,
+    start_path: String,
 }
 
 impl ScanManager {
@@ -14,10 +15,12 @@ impl ScanManager {
         ScanManager {
             file_list: Vec::new(),
             hasher: HashManager::new(algorithm),
+            start_path: String::new(),
         }
     }
 
     pub fn start_hash(&mut self, path: String) -> io::Result<()> {
+        self.start_path = path.clone();
         let path_check = Path::new(&path);
 
         if !path_check.exists() {
@@ -80,5 +83,9 @@ impl ScanManager {
 
     pub fn get_hash_manager(&self) -> &HashManager {
         &self.hasher
+    }
+
+    pub fn get_path(&self) -> &str {
+        &self.start_path
     }
 }
