@@ -1,14 +1,51 @@
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
+mod core;
+use crate::core::{
+    hash_manager::HashAlgorithm, io::directory_node::DirectoryNode, scan_manager::ScanManager,
+};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+    #[cfg(target_os = "linux")]
+    {
+        if std::env::var("WAYLAND_DISPLAY").is_ok() {
+            // SAFETY: this program is single-threaded up to this point
+            unsafe {
+                std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+            }
+        }
+    }
+    //let _ = tauri::Builder::default().run(tauri::generate_context!());
+    let mut scan = ScanManager::new(HashAlgorithm::Blake3);
+
+    let res = scan.start_hash(String::from("/home/lars/Downloads"));
+
+    match res {
+        Ok(()) => handle_success(&mut scan),
+        Err(e) => println!("{}", e),
+    }
+    println!("{}", scan.get_hash_manager().get_files_counted());
+}
+
+fn handle_success(s: &mut ScanManager) {
+    let finished_list = s.get_list();
+
+    for i in finished_list.iter() {
+        let result = i.get_result();
+        match result {
+            Ok(s) => println!("Path: {}; Result: {}", i.get_path(), s),
+            Err(s) => println!("Path: {}; Result: {}", i.get_path(), s),
+        }
+    }
+
+    let test = DirectoryNode::build_tree(s.get_path(), finished_list);
+    let json = test.to_json();
+    match json {
+        Ok(s) => println!("{}", s),
+        Err(e) => println!("{}", e),
+    }
+    let output = test.save_to_file("/home/lars/Downloads/test.json");
+    match output {
+        Ok(()) => (),
+        Err(_e) => println!("Error"),
+    }
 }
