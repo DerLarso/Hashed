@@ -73,8 +73,20 @@ impl HashManager {
 
         Ok(hex_string)
     }
-
     pub fn get_files_counted(&self) -> &usize {
         &self.files_counted
+    }
+}
+
+impl HashAlgorithm {
+    pub fn get_hash_from_bytes(&self, bytes: &[u8]) -> String {
+        match self {
+            HashAlgorithm::Blake3 => blake3::hash(bytes).to_hex().to_string(),
+            HashAlgorithm::Sha256 => {
+                let mut hasher = Sha256::new();
+                hasher.update(bytes);
+                hex::encode(hasher.finalize())
+            }
+        }
     }
 }

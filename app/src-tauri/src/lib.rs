@@ -2,7 +2,9 @@ mod core;
 use std::thread;
 
 use crate::core::{
-    hash_manager::HashAlgorithm, io::{directory_node::DirectoryNode, file_manager::FileManager, meta_data::MetaData}, scan_manager::ScanManager,
+    hash_manager::HashAlgorithm,
+    io::{directory_node::DirectoryNode, file_manager::FileManager, meta_data::MetaData},
+    scan_manager::ScanManager,
 };
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -32,7 +34,7 @@ pub fn run() {
 fn cli() {
     let mut scan = ScanManager::new(HashAlgorithm::Blake3);
 
-    let res = scan.start_hash(String::from("/home/lars/Downloads"));
+    let res = scan.start_hash(String::from("/home/lars/Bilder"));
 
     match res {
         Ok(()) => handle_success(&mut scan),
@@ -58,7 +60,10 @@ fn handle_success(s: &mut ScanManager) {
         Ok(s) => println!("{}", s),
         Err(e) => println!("{}", e),
     }
-    let meta = MetaData::new(*s.get_hash_manager().get_files_counted(), *s.get_hash_time());
+    let meta = MetaData::new(
+        *s.get_hash_manager().get_files_counted(),
+        *s.get_hash_time(),
+    );
     let output = FileManager::save_file("/home/lars/Downloads/test.hashed", &test, &meta);
     match output {
         Ok(()) => (),

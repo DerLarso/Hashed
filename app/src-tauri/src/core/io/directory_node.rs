@@ -1,19 +1,19 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::core::structs::file_info::FileInfo;
 #[derive(serde::Serialize)]
 pub struct DirectoryNode {
     pub name: String,
-    pub files: HashMap<String, Result<String, String>>,
-    pub sub_directories: HashMap<String, DirectoryNode>,
+    pub files: BTreeMap<String, Result<String, String>>,
+    pub sub_directories: BTreeMap<String, DirectoryNode>,
 }
 
 impl DirectoryNode {
     pub fn new(name: String) -> Self {
         DirectoryNode {
             name,
-            files: HashMap::new(),
-            sub_directories: HashMap::new(),
+            files: BTreeMap::new(),
+            sub_directories: BTreeMap::new(),
         }
     }
 
@@ -38,13 +38,17 @@ impl DirectoryNode {
         }
     }
 
-    pub fn build_tree(start_path: &str, file_list: &Vec<FileInfo>) -> DirectoryNode {
+    pub fn build_tree(start_path: &str, file_list: &[FileInfo]) -> DirectoryNode {
         let mut start = DirectoryNode::new(start_path.to_string());
 
         for file in file_list {
-            let path = file.get_path();
+            let path = std::path::Path::new(file.get_path());
 
-            let path_parts: Vec<&str> = path.split('/').filter(|x| !x.is_empty()).collect();
+            let path_parts: Vec<&str> = path
+                .components()
+                .filter_map(|a| a.as_os_str().to_str())
+                .filter(|s| *s != "/" && !s.contains(':'))
+                .collect();
 
             let result = match file.get_result() {
                 Ok(a) => Ok(a.clone()),

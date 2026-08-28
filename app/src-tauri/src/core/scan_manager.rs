@@ -1,8 +1,8 @@
+use crate::core::hash_manager::{HashAlgorithm, HashManager};
+use crate::core::structs::file_info::FileInfo;
 use std::io::{self, Error};
 use std::path::Path;
 use std::time::{Duration, SystemTime};
-use crate::core::hash_manager::{HashAlgorithm, HashManager};
-use crate::core::structs::file_info::FileInfo;
 
 pub struct ScanManager {
     file_list: Vec<FileInfo>,
@@ -34,27 +34,30 @@ impl ScanManager {
             //TODO: Replace with own error type
         }
 
-        self.recursive_read(path);
+        self.recursive_read(path_check);
 
         self.hash_time = time.elapsed().unwrap_or_default();
         Ok(())
     }
 
-    fn recursive_read(&mut self, path: String) {
+    fn recursive_read(&mut self, path_buf: &Path) {
+        let path = path_buf.as_os_str().to_str().unwrap().to_string();
         if cfg!(target_os = "linux")
-            && (path.starts_with("/proc/") || path.starts_with("/sys/") || path.starts_with("/dev/") || path.starts_with("/run/"))
+            && (path.starts_with("/proc/")
+                || path.starts_with("/sys/")
+                || path.starts_with("/dev/")
+                || path.starts_with("/run/"))
         {
             return;
         }
+
 
         if cfg!(target_os = "windows")
             && (path.ends_with("pagefile.sys") || path.ends_with("hiberfil.sys"))
         {
             return;
         }
-
         let check = Path::new(&path);
-
         let Ok(metadata) = check.symlink_metadata() else {
             return;
         };
@@ -71,7 +74,7 @@ impl ScanManager {
             && let Ok(entries) = check.read_dir()
         {
             for entry in entries.flatten() {
-                let entry_path = entry.path().display().to_string();
+                let entry_path = &entry.path();
 
                 self.recursive_read(entry_path);
             }
