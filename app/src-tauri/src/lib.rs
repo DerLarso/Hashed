@@ -34,7 +34,7 @@ pub fn run() {
 fn cli() {
     let mut scan = ScanManager::new(HashAlgorithm::Blake3);
 
-    let res = scan.start_hash(String::from("/home/lars/Bilder"));
+    let res = scan.start_hash(String::from("/"));
 
     match res {
         Ok(()) => handle_success(&mut scan),

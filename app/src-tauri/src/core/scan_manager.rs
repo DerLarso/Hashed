@@ -41,12 +41,12 @@ impl ScanManager {
     }
 
     fn recursive_read(&mut self, path_buf: &Path) {
-        let path = path_buf.as_os_str().to_str().unwrap().to_string();
+        let path = path_buf.to_string_lossy();
         if cfg!(target_os = "linux")
-            && (path.starts_with("/proc/")
-                || path.starts_with("/sys/")
-                || path.starts_with("/dev/")
-                || path.starts_with("/run/"))
+            && (path.starts_with("/proc")
+                || path.starts_with("/sys")
+                || path.starts_with("/dev")
+                || path.starts_with("/run"))
         {
             return;
         }
@@ -57,8 +57,7 @@ impl ScanManager {
         {
             return;
         }
-        let check = Path::new(&path);
-        let Ok(metadata) = check.symlink_metadata() else {
+        let Ok(metadata) = path_buf.symlink_metadata() else {
             return;
         };
 
@@ -69,14 +68,12 @@ impl ScanManager {
         if metadata.is_file() {
             let result = self.compute_hash(&path);
 
-            self.file_list.push(FileInfo::new(path, result));
+            self.file_list.push(FileInfo::new(path.into_owned(), result));
         } else if metadata.is_dir()
-            && let Ok(entries) = check.read_dir()
+            && let Ok(entries) = path_buf.read_dir()
         {
             for entry in entries.flatten() {
-                let entry_path = &entry.path();
-
-                self.recursive_read(entry_path);
+                self.recursive_read(&entry.path());
             }
         }
     }
