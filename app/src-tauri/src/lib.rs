@@ -1,4 +1,6 @@
 mod core;
+use std::thread;
+
 use crate::core::{
     hash_manager::HashAlgorithm, io::directory_node::DirectoryNode, scan_manager::ScanManager,
 };
@@ -14,10 +16,23 @@ pub fn run() {
             }
         }
     }
-    //let _ = tauri::Builder::default().run(tauri::generate_context!());
+
+    tauri::Builder::default()
+        .setup(|_app| {
+            thread::spawn(move || {
+                cli();
+            });
+            Ok(())
+        })
+        .run(tauri::generate_context!())
+        .expect("Error");
+}
+
+//temp
+fn cli() {
     let mut scan = ScanManager::new(HashAlgorithm::Blake3);
 
-    let res = scan.start_hash(String::from("/home/lars/Downloads"));
+    let res = scan.start_hash(String::from("/"));
 
     match res {
         Ok(()) => handle_success(&mut scan),
