@@ -46,20 +46,7 @@ fn cli() {
 fn handle_success(s: &mut ScanManager) {
     let finished_list = s.get_list();
 
-    for i in finished_list.iter() {
-        let result = i.get_result();
-        match result {
-            Ok(s) => println!("Path: {}; Result: {}", i.get_path(), s),
-            Err(s) => println!("Path: {}; Result: {}", i.get_path(), s),
-        }
-    }
-
     let test = DirectoryNode::build_tree(s.get_path(), finished_list);
-    let json = test.to_json();
-    match json {
-        Ok(s) => println!("{}", s),
-        Err(e) => println!("{}", e),
-    }
     let meta = MetaData::new(
         *s.get_hash_manager().get_files_counted(),
         *s.get_hash_time(),
