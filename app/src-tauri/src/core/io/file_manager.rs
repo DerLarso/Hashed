@@ -1,0 +1,4 @@
+struct FileManager {
+    path: String,
+    
+}

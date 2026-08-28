@@ -1,6 +1,6 @@
 use std::io::{self, Error};
 use std::path::Path;
-
+use std::time::{Duration, SystemTime};
 use crate::core::hash_manager::{HashAlgorithm, HashManager};
 use crate::core::structs::file_info::FileInfo;
 
@@ -8,6 +8,7 @@ pub struct ScanManager {
     file_list: Vec<FileInfo>,
     hasher: HashManager,
     start_path: String,
+    hash_time: Duration,
 }
 
 impl ScanManager {
@@ -16,10 +17,12 @@ impl ScanManager {
             file_list: Vec::new(),
             hasher: HashManager::new(algorithm),
             start_path: String::new(),
+            hash_time: Duration::ZERO,
         }
     }
 
     pub fn start_hash(&mut self, path: String) -> io::Result<()> {
+        let time = SystemTime::now();
         self.start_path = path.clone();
         let path_check = Path::new(&path);
 
@@ -33,12 +36,13 @@ impl ScanManager {
 
         self.recursive_read(path);
 
+        self.hash_time = time.elapsed().unwrap_or_default();
         Ok(())
     }
 
     fn recursive_read(&mut self, path: String) {
         if cfg!(target_os = "linux")
-            && (path == "/proc" || path == "/sys" || path == "/dev" || path == "/run")
+            && (path.starts_with("/proc/") || path.starts_with("/sys/") || path.starts_with("/dev/") || path.starts_with("/run/"))
         {
             return;
         }
@@ -48,6 +52,7 @@ impl ScanManager {
         {
             return;
         }
+
         let check = Path::new(&path);
 
         let Ok(metadata) = check.symlink_metadata() else {
@@ -87,5 +92,9 @@ impl ScanManager {
 
     pub fn get_path(&self) -> &str {
         &self.start_path
+    }
+
+    pub fn get_hash_time(&self) -> &Duration {
+        &self.hash_time
     }
 }
