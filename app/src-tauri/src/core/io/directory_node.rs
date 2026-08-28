@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 
 use crate::core::structs::file_info::FileInfo;
-use std::io::{BufWriter, Write};
-use std::fs::{File};
 #[derive(serde::Serialize)]
 pub struct DirectoryNode {
     pub name: String,
@@ -62,13 +60,4 @@ impl DirectoryNode {
     pub fn to_json(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string(&self)
     }
-
-    pub fn save_to_file(&self, path: &str) -> Result<(), Box<dyn std::error::Error>> {
-        let file = File::create(path)?;
-        let mut writer = BufWriter::new(file);
-        serde_json::to_writer(&mut writer, &self)?;
-        writer.flush()?;
-        Ok(())
-    }
-    
 }

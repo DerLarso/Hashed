@@ -15,8 +15,4 @@ impl MetaData {
             hash_time,
         }
     }
-
-    pub fn get_meta_data(&self) -> Result<String, serde_json::Error> {
-        serde_json::to_string(&self)
-    }
 }
