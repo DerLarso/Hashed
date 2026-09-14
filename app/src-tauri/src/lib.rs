@@ -1,11 +1,11 @@
 mod core;
-use std::thread;
-
 use crate::core::{
     hash_manager::HashAlgorithm,
     io::{directory_node::DirectoryNode, file_manager::FileManager, meta_data::MetaData},
     scan_manager::ScanManager,
 };
+use chrono::{Utc};
+use std::thread;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -34,13 +34,12 @@ pub fn run() {
 fn cli() {
     let mut scan = ScanManager::new(HashAlgorithm::Blake3);
 
-    let res = scan.start_hash(String::from("/"));
+    let res = scan.start_hash(String::from("/home/lars/Downloads"));
 
     match res {
         Ok(()) => handle_success(&mut scan),
         Err(e) => println!("{}", e),
     }
-    println!("{}", scan.get_hash_manager().get_files_counted());
 }
 
 fn handle_success(s: &mut ScanManager) {
@@ -50,8 +49,9 @@ fn handle_success(s: &mut ScanManager) {
     let meta = MetaData::new(
         *s.get_hash_manager().get_files_counted(),
         *s.get_hash_time(),
+        Utc::now(),
     );
-    let output = FileManager::save_file("/home/lars/Downloads/test.hashed", &test, &meta);
+    let output = FileManager::save_file(String::from("/home/lars/Downloads/"), &test, &meta);
     match output {
         Ok(()) => (),
         Err(_e) => println!("Error"),

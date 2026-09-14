@@ -31,7 +31,6 @@ impl ScanManager {
                 std::io::ErrorKind::NotFound,
                 "This Path is invalid!",
             ));
-            //TODO: Replace with own error type
         }
 
         self.recursive_read(path_check);

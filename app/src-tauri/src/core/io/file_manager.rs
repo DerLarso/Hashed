@@ -14,10 +14,12 @@ pub struct FileManager {}
 
 impl FileManager {
     pub fn save_file(
-        folder: &str,
+        mut folder: String,
         json: &DirectoryNode,
         meta: &MetaData,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        folder = folder + meta.get_current_os() + "-" + meta.get_local_time() + ".hashed";
+
         let path = File::create(folder)?;
         let writer = BufWriter::new(path);
         let mut zip = ZipWriter::new(writer);
