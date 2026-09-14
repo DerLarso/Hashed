@@ -5,18 +5,18 @@ pub struct MetaData {
     version: usize,
     files_hashed: usize,
     hash_time: std::time::Duration,
-    date: DateTime<Utc>,
+    date_utc: DateTime<Utc>,
     local_time: String,
     os: String,
 }
 
 impl MetaData {
-    pub fn new(files_hashed: usize, hash_time: Duration, date: DateTime<Utc>) -> MetaData {
+    pub fn new(files_hashed: usize, hash_time: Duration, date_utc: DateTime<Utc>) -> MetaData {
         MetaData {
             version: 1,
             files_hashed,
             hash_time,
-            date,
+            date_utc,
             local_time: Local::now().to_rfc3339_opts(SecondsFormat::Secs, true),
             os: std::env::consts::OS.to_string(),
         }
