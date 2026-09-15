@@ -1,9 +1,10 @@
 use std::{
     fs::File,
-    io::{BufWriter, Write},
+    io::{BufReader, BufWriter, Read, Write},
+    path::Path,
 };
 
-use zip::{ZipWriter, write::SimpleFileOptions};
+use zip::{ZipArchive, ZipWriter, write::SimpleFileOptions};
 
 use crate::core::{
     hash_manager::HashAlgorithm::Sha256,
@@ -41,5 +42,52 @@ impl FileManager {
 
         zip.finish()?;
         Ok(())
+    }
+    //own error type is missing!
+    pub fn open_file(&self, path: &str) -> Result<String, Box<dyn std::error::Error>> { //doesnt work
+        if !Path::new(path).exists() {
+            return;
+        }
+        if !path.ends_with(".hashed") {
+            return;
+        }
+        let file = File::open(path)?;
+        let reader = BufReader::new(file);
+        let mut content = ZipArchive::new(reader)?;
+        let meta: Result<MetaData, serde_json::Error> =
+            serde_json::from_reader(content.by_name("meta.json")?);
+        let version = match &meta {
+            Ok(m) => m.get_version(),
+            Err(_m) => 0,
+        };
+        if version == 1 {
+            let mut hash_of_tree = String::from("");
+            let result = content
+                .by_name("hash.sha256")?
+                .read_to_string(&mut hash_of_tree);
+            match result {
+                Ok(_m) => {
+                    let trimmed = hash_of_tree.trim().to_string();
+                    let mut s = Vec::new();
+                    let r = content.by_name("tree.json")?.read_to_end(&mut s);
+                    match r {
+                        Ok(_e) => {
+                            let hash = Sha256.get_hash_from_bytes(&s);
+                            if trimmed == hash {
+                                let dic: Result<DirectoryNode, serde_json::Error> =
+                                    serde_json::from_slice(&s);
+                            } else {
+                                Err()
+                            }
+                        }
+                        Err(_e) => (),
+                    }
+                }
+                Err(_e) => (),
+            }
+        } else {
+            Err()
+        }
+        Ok(String::from(""))
     }
 }

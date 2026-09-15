@@ -1,7 +1,8 @@
 use std::collections::BTreeMap;
 
 use crate::core::structs::file_info::FileInfo;
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
+
 pub struct DirectoryNode {
     pub name: String,
     pub files: BTreeMap<String, Result<String, String>>,

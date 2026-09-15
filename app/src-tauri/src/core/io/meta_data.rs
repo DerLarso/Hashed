@@ -1,6 +1,6 @@
 use chrono::{DateTime, Local, SecondsFormat, Utc};
 use std::time::Duration;
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct MetaData {
     version: usize,
     files_hashed: usize,
@@ -28,5 +28,9 @@ impl MetaData {
 
     pub fn get_current_os(&self) -> &str {
         &self.os
+    }
+
+    pub fn get_version(&self)-> usize {
+        self.version
     }
 }
