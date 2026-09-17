@@ -1,0 +1,20 @@
+use std::fmt;
+use std::io;
+
+pub enum HashedError {
+    FileNotFound(String),
+    HashMissmatch {expected: String, actual: String},
+    UnsupportedVersion(usize),
+    Io(io::Error),
+}
+
+impl fmt::Display for HashedError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            HashedError::FileNotFound(_e) => write!(f,""),
+            HashedError::HashMissmatch { expected: _e, actual: _b } => write!(f,""),
+            HashedError::Io(_e) => write!(f, ""),
+            HashedError::UnsupportedVersion(_e) => write!(f, ""),
+        }
+    }
+}
