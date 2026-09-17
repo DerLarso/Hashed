@@ -1,6 +1,6 @@
 use std::fmt;
 use std::io;
-
+#[derive(Debug)]
 pub enum HashedError {
     FileNotFound(String),
     HashMissmatch {expected: String, actual: String},
@@ -17,4 +17,17 @@ impl fmt::Display for HashedError {
             HashedError::UnsupportedVersion(_e) => write!(f, ""),
         }
     }
+}
+
+impl std::error::Error for HashedError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            HashedError::Io(e) => Some(e),
+            _ => None,
+        }
+    }
+}
+
+impl From<io::Error> for HashedError {
+    
 }
