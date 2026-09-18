@@ -1,5 +1,7 @@
 use std::fmt;
 use std::io;
+
+use crate::core::io::hashed_error::HashedError::JsonError;
 #[derive(Debug)]
 pub enum HashedError {
     FileNotFound(String),
@@ -31,6 +33,8 @@ impl std::error::Error for HashedError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             HashedError::Io(e) => Some(e),
+            HashedError::ZipError(e) => Some(e),
+            HashedError::JsonError(e) => Some(e),
             _ => None,
         }
     }

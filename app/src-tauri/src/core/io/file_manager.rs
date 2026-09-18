@@ -7,8 +7,7 @@ use std::{
 use zip::{ZipArchive, ZipWriter, write::SimpleFileOptions};
 
 use crate::core::{
-    hash_manager::HashAlgorithm::Sha256,
-    io::{directory_node::DirectoryNode, hashed_error::HashedError, meta_data::MetaData},
+    hash_manager::HashAlgorithm::Sha256, io::{directory_node::DirectoryNode, hashed_error::HashedError, hashed_file_struct::HashedFileStruct, meta_data::MetaData},
 };
 
 pub struct FileManager {}
@@ -43,9 +42,8 @@ impl FileManager {
         zip.finish()?;
         Ok(())
     }
-    //own error type is missing!
-    pub fn open_file(&self, path: &str) -> Result<String, HashedError> {
-        //doesnt work
+
+    pub fn open_file(&self, path: &str) -> Result<HashedFileStruct, HashedError> {
         if !Path::new(path).exists() {
             return Err(HashedError::FileNotFound(path.to_string()));
         }
@@ -68,15 +66,15 @@ impl FileManager {
             let hash = Sha256.get_hash_from_bytes(&s);
             if trimmed == hash {
                 let dic: DirectoryNode = serde_json::from_slice(&s)?;
+                Ok(HashedFileStruct::new(meta,dic,hash))
             } else {
-                return Err(HashedError::HashMissmatch {
+                Err(HashedError::HashMissmatch {
                     expected: trimmed,
                     actual: hash,
-                });
+                })
             }
         } else {
-            return Err(HashedError::UnsupportedVersion(version));
+            Err(HashedError::UnsupportedVersion(version))
         }
-        Ok(String::from(""))
     }
 }
