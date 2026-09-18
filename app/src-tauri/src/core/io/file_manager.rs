@@ -8,7 +8,7 @@ use zip::{ZipArchive, ZipWriter, write::SimpleFileOptions};
 
 use crate::core::{
     hash_manager::HashAlgorithm::Sha256,
-    io::{directory_node::DirectoryNode, meta_data::MetaData},
+    io::{directory_node::DirectoryNode, hashed_error::HashedError, meta_data::MetaData},
 };
 
 pub struct FileManager {}
@@ -44,49 +44,38 @@ impl FileManager {
         Ok(())
     }
     //own error type is missing!
-    pub fn open_file(&self, path: &str) -> Result<String, Box<dyn std::error::Error>> { //doesnt work
+    pub fn open_file(&self, path: &str) -> Result<String, HashedError> {
+        //doesnt work
         if !Path::new(path).exists() {
-            return;
+            return Err(HashedError::FileNotFound(path.to_string()));
         }
         if !path.ends_with(".hashed") {
-            return;
+            return Err(HashedError::InvalidEnding(path.to_string()));
         }
         let file = File::open(path)?;
         let reader = BufReader::new(file);
         let mut content = ZipArchive::new(reader)?;
-        let meta: Result<MetaData, serde_json::Error> =
-            serde_json::from_reader(content.by_name("meta.json")?);
-        let version = match &meta {
-            Ok(m) => m.get_version(),
-            Err(_m) => 0,
-        };
+        let meta: MetaData = serde_json::from_reader(content.by_name("meta.json")?)?;
+        let version = meta.get_version();
         if version == 1 {
             let mut hash_of_tree = String::from("");
-            let result = content
+            content
                 .by_name("hash.sha256")?
-                .read_to_string(&mut hash_of_tree);
-            match result {
-                Ok(_m) => {
-                    let trimmed = hash_of_tree.trim().to_string();
-                    let mut s = Vec::new();
-                    let r = content.by_name("tree.json")?.read_to_end(&mut s);
-                    match r {
-                        Ok(_e) => {
-                            let hash = Sha256.get_hash_from_bytes(&s);
-                            if trimmed == hash {
-                                let dic: Result<DirectoryNode, serde_json::Error> =
-                                    serde_json::from_slice(&s);
-                            } else {
-                                Err()
-                            }
-                        }
-                        Err(_e) => (),
-                    }
-                }
-                Err(_e) => (),
+                .read_to_string(&mut hash_of_tree)?;
+            let trimmed = hash_of_tree.trim().to_string();
+            let mut s = Vec::new();
+            content.by_name("tree.json")?.read_to_end(&mut s)?;
+            let hash = Sha256.get_hash_from_bytes(&s);
+            if trimmed == hash {
+                let dic: DirectoryNode = serde_json::from_slice(&s)?;
+            } else {
+                return Err(HashedError::HashMissmatch {
+                    expected: trimmed,
+                    actual: hash,
+                });
             }
         } else {
-            Err()
+            return Err(HashedError::UnsupportedVersion(version));
         }
         Ok(String::from(""))
     }
