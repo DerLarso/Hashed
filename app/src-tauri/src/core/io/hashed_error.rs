@@ -29,5 +29,7 @@ impl std::error::Error for HashedError {
 }
 
 impl From<io::Error> for HashedError {
-    
+    fn from(err: io::Error) -> Self {
+        HashedError::Io(err)
+    }
 }
