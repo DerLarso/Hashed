@@ -7,7 +7,7 @@ use std::{
 use zip::{ZipArchive, ZipWriter, write::SimpleFileOptions};
 
 use crate::core::{
-    hash_manager::HashAlgorithm, io::{directory_node::DirectoryNode, hashed_error::HashedError, hashed_file_struct::HashedFileStruct, meta_data::MetaData},
+    hash_manager::HashAlgorithm, io::{directory_node::DirectoryNode, hashed_error::HashedError, meta_data::MetaData}, structs::hashed_file_struct::HashedFileStruct,
 };
 
 pub struct FileManager {}
