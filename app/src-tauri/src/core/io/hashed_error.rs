@@ -1,7 +1,6 @@
 use std::fmt;
 use std::io;
 
-use crate::core::io::hashed_error::HashedError::JsonError;
 #[derive(Debug)]
 pub enum HashedError {
     FileNotFound(String),

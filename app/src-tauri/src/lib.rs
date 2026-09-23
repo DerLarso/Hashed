@@ -56,4 +56,10 @@ fn handle_success(s: &mut ScanManager) {
         Ok(()) => (),
         Err(_e) => println!("Error"),
     }
+
+    let read_file = FileManager::open_file(""); //Just to mute the annoying Warnings
+    match read_file {
+        Ok(_e) => (),
+        Err(_e) => (),
+    }
 }

@@ -43,7 +43,7 @@ impl FileManager {
         Ok(())
     }
 
-    pub fn open_file(&self, path: &str) -> Result<HashedFileStruct, HashedError> {
+    pub fn open_file(path: &str) -> Result<HashedFileStruct, HashedError> {
 
         if !Path::new(path).exists() {
             return Err(HashedError::FileNotFound(path.to_string()));
