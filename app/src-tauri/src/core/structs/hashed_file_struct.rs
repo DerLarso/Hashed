@@ -8,8 +8,12 @@ pub struct HashedFileStruct {
 }
 
 impl HashedFileStruct {
-    pub fn new(meta: MetaData, tree: DirectoryNode, hash: String) -> HashedFileStruct{
-        HashedFileStruct { meta, tree, hash }
+    pub fn new(meta: MetaData, tree: DirectoryNode, hash: String) -> HashedFileStruct {
+        HashedFileStruct {
+            meta,
+            tree,
+            hash,
+        }
     }
     pub fn get_meta(&self) -> &MetaData {
         &self.meta
